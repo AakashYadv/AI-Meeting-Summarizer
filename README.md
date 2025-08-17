@@ -1,3 +1,10 @@
+
+# AI Meeting Notes Summarizer (Flask + Groq)
+
+👉 **Live Demo:** [https://ai-meeting-summarizer-7m1x.onrender.com](https://ai-meeting-summarizer-7m1x.onrender.com)
+
+A minimal full-stack app to upload/paste meeting transcripts, add a custom instruction, generate an AI summary, edit it, and share via email.
+
 # AI Meeting Notes Summarizer (Flask + Groq)
 
 A minimal full-stack app to upload/paste meeting transcripts, add a custom instruction, generate an AI summary, edit it, and share via email.
