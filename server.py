@@ -17,7 +17,7 @@ def get_groq_client():
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY is not set. Add it to your environment.")
-    return Groq()
+    return Groq(api_key=api_key)   # ✅ fixed
 
 # Default model
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
@@ -95,7 +95,6 @@ def email_summary():
         print(error_details)
         return jsonify({"error": str(e), "trace": error_details}), 500
 
-
 # -------------------- FILE UPLOAD --------------------
 ALLOWED_EXT = {"txt", "docx", "pdf", "pptx"}
 
@@ -147,12 +146,10 @@ def upload_file():
         print(error_details)
         return jsonify({"error": f"Failed to parse file: {str(e)}"}), 500
 
-
 # -------------------- GLOBAL ERROR HANDLER --------------------
 @app.errorhandler(Exception)
 def handle_exception(e):
     return jsonify({"error": str(e)}), 500
-
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8080"))
