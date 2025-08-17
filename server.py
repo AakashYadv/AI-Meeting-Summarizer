@@ -13,11 +13,12 @@ load_dotenv()
 
 app = Flask(__name__)
 
+# -------------------- GROQ CLIENT --------------------
 def get_groq_client():
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY is not set. Add it to your environment.")
-    return Groq(api_key=api_key)   # ✅ fixed
+    return Groq(api_key=api_key)   # ✅ FIXED
 
 # Default model
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
