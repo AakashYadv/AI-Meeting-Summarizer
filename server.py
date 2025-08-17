@@ -1,10 +1,11 @@
 import os
 import traceback
+from io import BytesIO
 from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
 from utils.emailer import send_email
 from groq import Groq
-import docx
+from docx import Document
 import PyPDF2
 from pptx import Presentation
 
@@ -18,13 +19,14 @@ def get_groq_client():
         raise RuntimeError("GROQ_API_KEY is not set. Add it to your environment.")
     return Groq()
 
-# Updated default model
+# Default model
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
+# -------------------- SUMMARIZATION --------------------
 @app.route("/api/summarize", methods=["POST"])
 def summarize():
     data = request.get_json(force=True, silent=True) or {}
@@ -71,6 +73,7 @@ def summarize():
         print(error_details)
         return jsonify({"error": str(e), "trace": error_details}), 500
 
+# -------------------- EMAIL --------------------
 @app.route("/api/send-email", methods=["POST"])
 def email_summary():
     data = request.get_json(force=True, silent=True) or {}
@@ -93,7 +96,7 @@ def email_summary():
         return jsonify({"error": str(e), "trace": error_details}), 500
 
 
-# ---------------- FILE UPLOAD SUPPORT ----------------
+# -------------------- FILE UPLOAD --------------------
 ALLOWED_EXT = {"txt", "docx", "pdf", "pptx"}
 
 def allowed_file(filename):
@@ -119,25 +122,36 @@ def upload_file():
             text = file.read().decode("utf-8", errors="ignore")
 
         elif ext == "docx":
-            doc = docx.Document(file)
-            for para in doc.paragraphs:
-                text += para.text + "\n"
+            doc = Document(BytesIO(file.read()))
+            text = "\n".join(p.text for p in doc.paragraphs)
 
         elif ext == "pdf":
-            reader = PyPDF2.PdfReader(file)
-            for page in reader.pages:
-                text += page.extract_text() + "\n"
+            reader = PyPDF2.PdfReader(BytesIO(file.read()))
+            pages = [page.extract_text() or "" for page in reader.pages]
+            text = "\n".join(pages)
 
         elif ext == "pptx":
-            prs = Presentation(file)
+            prs = Presentation(BytesIO(file.read()))
+            slides = []
             for slide in prs.slides:
                 for shape in slide.shapes:
-                    if hasattr(shape, "text"):
-                        text += shape.text + "\n"
+                    if hasattr(shape, "text") and shape.text:
+                        slides.append(shape.text)
+            text = "\n".join(slides)
 
         return jsonify({"text": text.strip()})
+
     except Exception as e:
+        error_details = traceback.format_exc()
+        print("---- File Upload ERROR ----")
+        print(error_details)
         return jsonify({"error": f"Failed to parse file: {str(e)}"}), 500
+
+
+# -------------------- GLOBAL ERROR HANDLER --------------------
+@app.errorhandler(Exception)
+def handle_exception(e):
+    return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
