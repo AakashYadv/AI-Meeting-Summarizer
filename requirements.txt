@@ -6,3 +6,4 @@ gunicorn==23.0.0
 sendgrid==6.11.0
 python-docx
 reportlab
+PyPDF2==3.0.1
