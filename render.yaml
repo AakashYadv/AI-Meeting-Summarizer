@@ -9,11 +9,7 @@ services:
       - key: GROQ_API_KEY
         sync: false
       - key: GROQ_MODEL
-        value: llama-3.1-70b-versatile
-      - key: SENDGRID_API_KEY
-        sync: false
-      - key: SENDGRID_FROM_EMAIL
-        sync: false
+        value: llama-3.3-70b-versatile
       - key: SMTP_USERNAME
         sync: false
       - key: SMTP_PASSWORD
